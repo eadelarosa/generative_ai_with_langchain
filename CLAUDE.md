@@ -16,7 +16,7 @@ This is the code repository for "Generative AI with LangChain, Second Edition" b
 ## Development Environment Setup
 
 ### Prerequisites
-- **Python:** 3.12.12
+- **Python:** 3.12.12 (recommended) / 3.11+ (for type checking via `pyproject.toml` target-version)
 - **System Tools:** pandoc, C++ compiler (gcc/g++), git
 - **Package Manager:** conda (recommended), pip, poetry, or Docker
 
@@ -80,9 +80,18 @@ Each chapter (`chapter1/` through `chapter9/`) is self-contained with:
 - `chapter{1-9}/`: Book chapter code organized by topic
 - `writing_assistant/`: Example Streamlit application
 - `pyproject.toml`: Ruff and project configuration
-- `Makefile`: Code validation commands
+- `Makefile`: Code validation commands (legacy, prefer ruff)
+
+### Files Excluded from Claude Context
+The `.claudeignore` file excludes large/temporary files to keep context efficient:
+- `.ipynb_checkpoints/`, model files (`.bin`, `.pt`, `.safetensors`), large data files
+- Vector store caches (`.faiss`, `chroma_db/`), environment/config files, the book PDF
+- The `docs/` and `notebooks/` directories (to avoid duplicating chapter content)
+- CLAUDE.md itself (to save tokens)
 
 ## Key Dependencies & Versions
+
+**Note:** Versions listed are from the active `second_edition` branch. The `v1` branch tracks ongoing LangChain 1.x compatibility updates. Always check `requirements.txt` or `pyproject.toml` for the current versions in your branch.
 
 ### Core Libraries
 - **langchain:** 1.2.10 - Core LLM orchestration
@@ -122,19 +131,29 @@ Each chapter (`chapter1/` through `chapter9/`) is self-contained with:
 ## Common Development Commands
 
 ### Code Quality & Validation
-```bash
-# Type checking with mypy
-make typecheck
 
-# Linting with ruff
+**Primary Tool: Ruff** — Fast, all-in-one Python linter and formatter
+```bash
+# Lint code (checks E, F, I rules)
 ruff check .
 
-# Linting with flake8 (legacy)
-make lint
-
-# Auto-format code with ruff
+# Format code (auto-fix style issues)
 ruff format .
+
+# Lint and auto-fix in one pass
 ruff check --fix .
+```
+
+**Type Checking**
+```bash
+# Validate type hints (requires mypy installed)
+make typecheck
+```
+
+**Legacy Commands** — Still functional but prefer ruff above
+```bash
+# Full lint with flake8 + black (legacy, slower)
+make lint
 ```
 
 ### Running Examples
@@ -167,6 +186,42 @@ python chapter7/software_development/agent.py
 # Data science agent
 python chapter7/data_science/agent.py
 ```
+
+## Common Tasks & Patterns
+
+### Upgrading Chapter Code for LangChain v1
+
+When the LangChain ecosystem releases major updates, chapters need systematic upgrades:
+
+1. **Identify Import Changes:**
+   - Old: `from langchain import X` → New: `from langchain_x import X`
+   - Example: `from langchain import OpenAI` → `from langchain_openai import ChatOpenAI`
+
+2. **Fix Callback Patterns:**
+   - LangChain 1.x changed how callbacks integrate with LangGraph
+   - Traced operations now flow through graph state, not separate callback handlers
+   - See `chapter9/` examples for modern callback patterns with FastAPI streaming
+
+3. **Update LCEL Chains:**
+   - Syntax unchanged (`prompt | llm | parser`), but component imports shift
+   - Ensure all components are from the correct namespace package
+
+4. **Test Comprehensively:**
+   - Run corresponding notebook in Colab/Kaggle alongside Python scripts
+   - Verify LangSmith traces show correct structure
+   - Check that streaming still works correctly (common pain point in upgrades)
+
+### Working with Notebooks
+
+- Notebooks are the "source of truth" for chapter examples; Python scripts are implementations
+- When updating code, keep notebooks and scripts aligned (mention in commit message if both change)
+- Test notebook in Colab/Kaggle before pushing (cloud platforms have latest dependencies)
+
+### Testing Your Changes
+
+- Type checking: `make typecheck` validates main application code
+- Style: `ruff check --fix .` auto-fixes most issues
+- Before PR: run the specific chapter's examples end-to-end locally
 
 ## Code Architecture & Patterns
 
@@ -220,15 +275,38 @@ Enforces E (pycodestyle), F (pyflakes), I (isort) rules with max complexity 10 (
 
 ## Git Workflow & Branch Strategy
 
-### Current Branch Context
-- Working on `v1` branch (for specific LangChain v1 upgrades)
-- Main branch for releases: `second_edition`
-- Regular updates to harmonize with LangChain releases
+### Branch Strategy
+
+**`second_edition`** (primary release branch)
+- Latest stable code matching book's 2nd edition
+- LangChain 0.3+ focus
+- Target for pull requests and releases
+
+**`v1`** (upgrade-in-progress branch)
+- Active work on LangChain 1.x compatibility
+- Not yet merged to `second_edition`
+- Chapters being systematically upgraded (see recent commits)
+- PRs merged here before final review to `second_edition`
+
+**`main`** (legacy)
+- Original version (December 2023)
+- No longer actively maintained
 
 ### Commit Message Conventions
-- Use format: `refactor(chapX): <description>` for chapter code updates
-- Example: `refactor(chap9): upgrade chapter 9 to latest v1 changes`
-- Example: `refactor(chap8): upgrade chapter 8 langsmith_evaluation.ipynb to latest v1 changes`
+When upgrading chapters to v1, follow this pattern:
+```
+refactor(chapX): upgrade to latest v1 changes
+
+- Updated imports from langchain.x to langchain-x packages
+- Fixed callback patterns for LangGraph 1.x
+- Updated LCEL usage if applicable
+
+Closes #<issue-number>
+```
+
+Examples:
+- `refactor(chap9): upgrade chapter 9 to latest v1 changes and resolve callback issues`
+- `refactor(chap8): upgrade langsmith_evaluation.ipynb to v1 patterns`
 
 ### Key Considerations
 - Repository is actively maintained to match LangChain ecosystem changes
@@ -237,30 +315,59 @@ Enforces E (pycodestyle), F (pyflakes), I (isort) rules with max complexity 10 (
 
 ## Important Notes
 
-### Stability vs. Latest Features
-- Repository may lag minor LangChain patch updates intentionally for stability
-- Focus is on reliable, production-grade examples rather than bleeding-edge
-- Test code against book examples before significant refactors
+### Working with Chapter Code
 
-### Environment Variables
+**Import Paths:** Examples assume `PYTHONPATH` is set to repo root when running scripts:
+```bash
+PYTHONPATH=. python chapter7/software_development/agent.py
+```
+Without this, relative imports from shared modules will fail.
+
+**Shared Modules:** Some code is shared across chapters (e.g., `chat_with_retrieval/`, `monitoring_and_evaluation/`). When updating chapter code, check if shared modules are affected by LangChain API changes.
+
+**Notebooks vs Scripts:** 
+- Notebooks (`.ipynb`) are primary for interactive exploration and book alignment
+- Standalone scripts in `chapter{4-9}/` are deployable applications, not just notebook conversions
+- Updating a notebook may not fully update corresponding scripts
+
+### Environment & Configuration
 - Never commit credentials or API keys
-- Use `config.py` pattern for local development
-- All examples check for environment variables before executing
+- Use `config.py` pattern for local development (already in `.gitignore`)
+- All examples check for environment variables at runtime
 
 ### Notebook Execution
-- Most code exists in Jupyter notebooks (`.ipynb` files)
-- Pure Python scripts in `chapter{4-9}/` are applications (FastAPI, Ray, etc.)
-- Always set up environment and API keys before running notebooks
+- Notebooks require Jupyter setup; see cloud platform links in chapter READMEs for Colab/Kaggle
+- Each notebook is self-contained; can run independently
+- Notebooks pull API keys from `config.py`
+
+### Stability vs. Latest Features
+- Repository intentionally lags minor LangChain patch updates for stability
+- Focus is on reliable, production-grade examples rather than chasing bleeding-edge
+- Before major refactors, test against corresponding book chapter examples
 
 ### Documentation Updates
-- Chapter READMEs document the examples and provide platform links
-- SETUP.md covers installation and API key setup
-- CONTRIBUTING.md covers contribution guidelines (dependency sync, testing)
+- **Chapter READMEs:** Document specific examples and provide cloud platform links
+- **SETUP.md:** Installation steps and API key configuration
+- **CONTRIBUTING.md:** Dependency syncing and testing guidelines
+- **CLAUDE.md:** This file (guidance for Claude Code)
 
 ## Development Productivity Tips
 
-- Use Jupyter for interactive exploration matching chapter structure
-- Leverage PYTHONPATH when running standalone scripts: `PYTHONPATH=. python script.py`
-- Check chapter README for specific examples and cloud platform options
-- Use ruff for fast linting: `ruff check --fix .` to auto-format
-- Refer to book chapters for conceptual context behind examples
+**Running Chapter Code:**
+- Always set `PYTHONPATH=.` when running scripts: `PYTHONPATH=. python chapter7/agent.py`
+- Notebooks can be run via Jupyter locally, or via Colab/Kaggle (links in chapter READMEs)
+
+**Code Quality Workflow:**
+- Format before committing: `ruff check --fix . && ruff format .`
+- Type check specific modules: `make typecheck` (covers main application directories)
+- Run this before opening a PR to catch style and type issues early
+
+**Debugging LangChain Upgrades:**
+- When upgrading code to v1, check LangSmith traces for callback/state issues
+- Search for deprecated imports: `grep -r "from langchain import" chapter*` (should use `langchain_x` packages)
+- Run the notebook in book context alongside the code to ensure parity
+
+**Finding Examples:**
+- Chapter READMEs link to Colab/Kaggle notebooks with full setup
+- Refer to book for conceptual context; code examples implement those concepts directly
+- Each chapter directory is self-contained but may reference shared modules
