@@ -1,0 +1,234 @@
+# Python and Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+*.iml
+.classpath
+.c9/
+*.launch
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Testing and Coverage
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Environment and Configuration
+.env
+.env.local
+.env.*.local
+*.env
+config.py
+config_*.py
+settings_*.py
+
+# OS-specific Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.windows
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Large Files and Data
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.iso
+*.dmg
+
+# Vector Stores and Indexes
+*.db
+*.faiss
+faiss_index.db
+*.pkl
+*.pickle
+chroma_db/
+vector_store/
+*.index
+
+# Model Files (Large LLM weights)
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.onnx
+models/
+model_cache/
+ollama_models/
+
+# Temporary and Cache Files
+*.tmp
+*.temp
+*.log
+*.pid
+.~*
+.#*
+*swp
+*swo
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Node and JavaScript (if applicable)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Database Files
+*.sqlite
+*.sqlite3
+*.db
+*.rdb
+*.dump
+
+# Credential Files
+secrets.json
+credentials.json
+.aws/
+.gcloud/
+.credentials/
+service_account*.json
+private_key*.pem
+*_key.pem
+*_secret.txt
+
+# Ray and Distributed Computing
+ray_results/
+*.pkl
+tune_metadata.json
+
+# Jupyter Server
+.jupyter/
+jupyter_notebook_config.py
+
+# Langsmith and Tracing
+.langsmith/
+langsmith_cache/
+
+# Large Data Files
+data/
+datasets/
+*.csv
+*.parquet
+*.feather
+*.hdf5
+*.h5
+
+# Output and Results
+output/
+results/
+artifacts/
+logs/
+runs/
+
+# Miscellaneous
+*.bak
+*.backup
+*.old
+todo.txt
+notes.txt
+scratch.py
+test_*.py
+temp_*.py
+
+# CI/CD
+.github/workflows/
+.gitlab-ci.yml
+.circleci/
+
+# Binary and compiled files
+*.o
+*.a
+*.la
+*.lo
+*.dylib
+*.dll
+*.exe
+*.so
+*.so.*
+
+# Node/npm (if frontend exists)
+package-lock.json
+node_modules/
+
+# Conda environment files (keep YAML but ignore installations)
+/opt/
+/opt/anaconda3/envs/
+
+# Docs folder
+docs/
+
+# Claude.md
+CLAUDE.md
+

@@ -37,3 +37,11 @@ cache/
 # Logs
 logs/
 *.log
+
+# Docs
+docs/
+
+# CLAUDE.md
+CLAUDE.md
+
+
